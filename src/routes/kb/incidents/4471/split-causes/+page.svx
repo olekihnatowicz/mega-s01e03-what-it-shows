@@ -1,0 +1,51 @@
+---
+layout: runbook
+title: '#4471 · split date causes'
+owner: support desk
+status: proposed
+reviewed: 2026-11-06
+signature: 'Aleksander Ihnatowicz'
+---
+
+<script>
+  import CauseTable from '#lib/kb/CauseTable.svelte';
+  import Callout from '#lib/kb/Callout.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+</script>
+
+Ticket **#4471** combines reports from two different causes. Split the work by cause, not by
+the subject text used to merge the reports.
+
+The export contains overlapping pages. The table deduplicates by report ID, so each report is
+counted once.
+
+## Cause breakdown
+
+<CauseTable ticket={4471} />
+
+## Parser: shared code reads month first
+
+The tenant directory uses day-first locales, while the shared parser reads dates month first.
+For example, report `R-41200` says a 7 April reminder went out on 4 July. This is the cause
+assigned to the majority of reports in #4471. Track it in [issue #1](https://github.com/olekihnatowicz/mega-s01e03-what-it-shows/issues/1).
+
+## Hint: booking-v3 shows the wrong order
+
+The `booking-v3` form displays `MM/DD/YYYY`, while the affected tenants use day-first locales
+and the form reads dates in the tenant's order. These reports come from form submissions for
+`alder.physio`, `copper.studio`, and `pale.harbour`. For example, `R-41230` says a client came
+on 1 June instead of 6 January. Track it in [issue #2](https://github.com/olekihnatowicz/mega-s01e03-what-it-shows/issues/2).
+
+Use the tenant configuration and intake channel to separate these causes. `meta.intakeTag` is
+only an intake guess, and matching subjects hid both causes in #4471.
+
+<Callout kind="warn">
+  The desk notes flag some reports as one-day moves. The supplied cause model leaves them in
+  the parser group by tenant and channel; keep that note visible, but do not count it as a
+  separate cause without evidence of a separate root cause.
+</Callout>
+
+Issue #1 covers the parser cause; issue #2 covers the hint cause. Each issue uses the unique
+report count shown above.
+
+<RenderStamp {signature} />
